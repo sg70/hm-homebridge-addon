@@ -1,0 +1,38 @@
+#!/bin/sh
+EXEC=/usr/local/bin/hb-service
+EXECARGS='--plugin-path /usr/local/lib/node_modules --user-storage-path /usr/local/homebridge --allow-root run'
+PIDFILE=/var/run/hb-service.pid
+
+start() {
+    logger -t homebridge -p user.info "start homebridge"
+    # shellcheck disable=SC2086 # word split on spaces wanted for $EXECARGS
+    start-stop-daemon --start --oknodo --make-pidfile --background --pidfile "$PIDFILE" --exec "$EXEC" -- $EXECARGS
+}
+
+stop() {
+    start-stop-daemon --stop --oknodo --retry 5 --pidfile "$PIDFILE"
+    logger -t homebridge -p user.info "stopped homebridge"
+}
+
+restart() {
+	stop
+	sleep 10
+	start
+}
+
+case "$1" in
+	start)
+		start
+	;;
+	stop)
+		stop
+	;;
+	restart|reload)
+		restart
+	;;
+	*)
+		echo "Usage: $0 {start|restart|stop}"
+		exit 1
+esac
+
+exit $?
