@@ -1,0 +1,55 @@
+#!/bin/sh
+
+ADDONNAME=homebridge
+PREFIX=/usr/local
+CONFIG_DIR=${PREFIX}/etc/config
+ADDON_DIR=${PREFIX}/addons/${ADDONNAME}
+RCD_DIR=${CONFIG_DIR}/rc.d
+LOGFILE=/var/log/homebridge-install.log
+NPM_CACHE_DIR=/tmp/npm-cache
+
+# redirect all output to log file
+exec > $LOGFILE 2>&1
+
+mount | grep ${PREFIX}
+if [ $? -eq 1 ]; then
+  mount ${PREFIX}
+fi
+
+# create necessary directories
+mkdir -p ${ADDON_DIR}
+chmod 755 ${ADDON_DIR}
+mkdir -p ${RCD_DIR}
+chmod 755 ${RCD_DIR}
+
+# install Homebridge and Homebridge UI
+echo "Running on Node version: "
+node --version
+echo "NPM is : "
+npm --version
+npm config set cache=${NPM_CACHE_DIR}
+npm config set prefix=${PREFIX}
+npm install --global --unsafe-perm homebridge homebridge-config-ui-x
+ln -s /var/log/homebridge.log ${ADDON_DIR}/homebridge.log
+
+# copy startup script
+cp -af homebridge ${RCD_DIR}/S98Homebridge
+
+# copy fake-sudo 
+cp -af fake-sudo ${PREFIX}/bin/sudo
+
+# start / config Homebridge
+# installation is not nessary as hb-service inits storage dir on 1st start
+cd /
+${RCD_DIR}/S98Homebridge start
+
+# wait until Homebridge has started
+sleep 5
+sync
+
+# read Homebridge UI port
+HOMEBRIDGE_UI_PORT=$(jq '.platforms[] | select(.platform="config").port' $ADDON_DIR/config.json)
+echo "Homebridge UI port: $HOMEBRIDGE_UI_PORT"
+
+# normal exit after installation
+exit 0
