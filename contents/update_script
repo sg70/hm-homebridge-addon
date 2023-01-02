@@ -51,5 +51,5 @@ sync
 HOMEBRIDGE_UI_PORT=$(jq '.platforms[] | select(.platform="config").port' $ADDON_DIR/config.json)
 echo "Homebridge UI port: $HOMEBRIDGE_UI_PORT"
 
-# normal exit after installation
-exit 0
+# force restart after installation
+exit 10
