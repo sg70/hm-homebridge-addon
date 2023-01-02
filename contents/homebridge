@@ -1,17 +1,20 @@
 #!/bin/sh
-EXEC=/usr/local/bin/hb-service
-EXECARGS='--plugin-path /usr/local/lib/node_modules --user-storage-path /usr/local/homebridge --allow-root run'
+ADDONNAME=homebridge
+PREFIX=/usr/local
+ADDON_DIR=${PREFIX}/addons/${ADDONNAME}
+EXEC=${PREFIX}/bin/hb-service
+EXECARGS="--user-storage-path $ADDON_DIR --allow-root run"
 PIDFILE=/var/run/hb-service.pid
 
 start() {
-    logger -t homebridge -p user.info "start homebridge"
+    logger -t homebridge -p user.info "start $ADDONNAME"
     # shellcheck disable=SC2086 # word split on spaces wanted for $EXECARGS
-    start-stop-daemon --start --oknodo --make-pidfile --background --pidfile "$PIDFILE" --exec "$EXEC" -- $EXECARGS
+	start-stop-daemon --start --oknodo --make-pidfile --background --pidfile "$PIDFILE" --exec "$EXEC" -- $EXECARGS
 }
 
 stop() {
     start-stop-daemon --stop --oknodo --retry 5 --pidfile "$PIDFILE"
-    logger -t homebridge -p user.info "stopped homebridge"
+    logger -t homebridge -p user.info "stopped $ADDONNAME"
 }
 
 restart() {
