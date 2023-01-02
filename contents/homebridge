@@ -9,8 +9,7 @@ PIDFILE=/var/run/hb-service.pid
 start() {
     logger -t homebridge -p user.info "start $ADDONNAME"
     # shellcheck disable=SC2086 # word split on spaces wanted for $EXECARGS
-	pwd >> /var/log/homebridge.log
-    start-stop-daemon --start --oknodo --make-pidfile --background --pidfile "$PIDFILE" --exec "$EXEC" -- $EXECARGS
+	start-stop-daemon --start --oknodo --make-pidfile --background --pidfile "$PIDFILE" --exec "$EXEC" -- $EXECARGS
 }
 
 stop() {

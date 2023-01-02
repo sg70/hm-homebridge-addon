@@ -11,5 +11,4 @@ tar -czvf ../homebridge.tar.gz *
 
 ## TODOS
 
-* switch to Mega linter <https://megalinter.io/latest/>
 * add entry to HomeMatic setup
