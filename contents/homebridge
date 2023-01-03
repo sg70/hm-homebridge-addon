@@ -7,14 +7,14 @@ EXECARGS="--user-storage-path $ADDON_DIR --allow-root run"
 PIDFILE=/var/run/hb-service.pid
 
 start() {
-    logger -t homebridge -p user.info "start $ADDONNAME"
-    # shellcheck disable=SC2086 # word split on spaces wanted for $EXECARGS
+	logger -t homebridge -p user.info "start $ADDONNAME"
+	# shellcheck disable=SC2086 # word split on spaces wanted for $EXECARGS
 	start-stop-daemon --start --oknodo --make-pidfile --background --pidfile "$PIDFILE" --exec "$EXEC" -- $EXECARGS
 }
 
 stop() {
-    start-stop-daemon --stop --oknodo --retry 5 --pidfile "$PIDFILE"
-    logger -t homebridge -p user.info "stopped $ADDONNAME"
+	start-stop-daemon --stop --oknodo --retry 5 --pidfile "$PIDFILE"
+	logger -t homebridge -p user.info "stopped $ADDONNAME"
 }
 
 restart() {
@@ -24,18 +24,19 @@ restart() {
 }
 
 case "$1" in
-	start)
-		start
+start)
+	start
 	;;
-	stop)
-		stop
+stop)
+	stop
 	;;
-	restart|reload)
-		restart
+restart | reload)
+	restart
 	;;
-	*)
-		echo "Usage: $0 {start|restart|stop}"
-		exit 1
+*)
+	echo "Usage: $0 {start|restart|stop}"
+	exit 1
+	;;
 esac
 
 exit $?

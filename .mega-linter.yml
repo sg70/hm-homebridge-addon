@@ -1,8 +1,17 @@
+---
 # Configuration file for MegaLinter
 # See all available variables at https://megalinter.io/configuration/ and in linters documentation
 
-APPLY_FIXES: all # all, none, or list of linter keys
-DISABLE:
-  - SPELL
+APPLY_FIXES: none
+DISABLE_LINTERS:
+  - SPELL_CSPELL
 SHOW_ELAPSED_TIME: true
 FILEIO_REPORTER: false
+PRINT_ALL_FILES: true
+
+BASH_EXEC_FILE_EXTENSIONS: [""]
+BASH_EXEC_FILTER_REGEX_INCLUDE: "(contents/fake-sudo)|(contents/homebridge)|(contents/update_script)"
+BASH_SHELLCHECK_FILE_EXTENSIONS: [""]
+BASH_SHELLCHECK_FILTER_REGEX_INCLUDE: "(contents/fake-sudo)|(contents/homebridge)|(contents/update_script)"
+BASH_SHFMT_FILE_EXTENSIONS: [""]
+BASH_SHFMT_FILTER_REGEX_INCLUDE: "(contents/fake-sudo)|(contents/homebridge)|(contents/update_script)"

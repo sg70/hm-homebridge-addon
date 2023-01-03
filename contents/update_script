@@ -9,11 +9,11 @@ LOGFILE=/var/log/homebridge-install.log
 NPM_CACHE_DIR=/tmp/npm-cache
 
 # redirect all output to log file
-exec > $LOGFILE 2>&1
+exec >$LOGFILE 2>&1
 
 mount | grep ${PREFIX}
 if [ $? -eq 1 ]; then
-  mount ${PREFIX}
+	mount ${PREFIX}
 fi
 
 # create necessary directories
@@ -35,7 +35,7 @@ ln -s /var/log/homebridge.log ${ADDON_DIR}/homebridge.log
 # copy startup script
 cp -af homebridge ${RCD_DIR}/S98Homebridge
 
-# copy fake-sudo 
+# copy fake-sudo
 cp -af fake-sudo ${PREFIX}/bin/sudo
 
 # start / config Homebridge
