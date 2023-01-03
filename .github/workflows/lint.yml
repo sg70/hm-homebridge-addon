@@ -41,10 +41,10 @@ jobs:
               -print0)
           SCRIPT_FILES_REGEX="${SCRIPT_FILES:${#SEPARATOR}}" # remove leading separator
           {
-            echo "BASH_EXEC_FILE_EXTENSIONS=['']"
-            echo "BASH_EXEC_FILTER_REGEX_INCLUDE='$SCRIPT_FILES_REGEX'"
-            echo "BASH_SHELLCHECK_FILE_EXTENSIONS=['']"
-            echo "BASH_SHELLCHECK_FILTER_REGEX_INCLUDE='$SCRIPT_FILES_REGEX'"
+            echo "BASH_EXEC_FILE_EXTENSIONS=[\"\"]"
+            echo "BASH_EXEC_FILTER_REGEX_INCLUDE=\"$SCRIPT_FILES_REGEX\""
+            echo "BASH_SHELLCHECK_FILE_EXTENSIONS=[\"\"]"
+            echo "BASH_SHELLCHECK_FILTER_REGEX_INCLUDE=\"$SCRIPT_FILES_REGEX\""
           } >> "$GITHUB_ENV"
 
       # MegaLinter
