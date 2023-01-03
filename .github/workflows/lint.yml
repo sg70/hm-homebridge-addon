@@ -25,30 +25,6 @@ jobs:
           token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
           fetch-depth: 0 # If you use VALIDATE_ALL_CODEBASE = true, you can remove this line to improve performances
 
-      # Find shell scripts with shebang for MegaLinter
-      - name: Find shell scripts
-        shell: bash
-        env:
-          SHEBANGREGEX: "^#! */[^ ]*/(env *)?[abk]*sh"
-        run: |
-          SCRIPT_FILES=""
-          SEPARATOR="|"
-          while IFS= read -r -d '' file; do
-            head -n1 "$file" | grep -Eqs "$SHEBANGREGEX" || continue
-            SCRIPT_FILES="$SCRIPT_FILES${SEPARATOR}($file)"
-          done < <(find -- contents/* \
-              -type f ! -name '*.*' \
-              -print0)
-          SCRIPT_FILES_REGEX="${SCRIPT_FILES:${#SEPARATOR}}" # remove leading separator
-          {
-            echo "BASH_EXEC_FILE_EXTENSIONS=[\"\"]"
-            echo "BASH_EXEC_FILTER_REGEX_INCLUDE=\"$SCRIPT_FILES_REGEX\""
-            echo "BASH_SHELLCHECK_FILE_EXTENSIONS=[\"\"]"
-            echo "BASH_SHELLCHECK_FILTER_REGEX_INCLUDE=\"$SCRIPT_FILES_REGEX\""
-            echo "BASH_SHFMT_FILE_EXTENSIONS=[\"\"]"
-            echo "BASH_SHFMT_FILTER_REGEX_INCLUDE=\"$SCRIPT_FILES_REGEX\""
-          } >> "$GITHUB_ENV"
-
       # MegaLinter
       - name: MegaLinter
         id: ml
