@@ -45,6 +45,8 @@ jobs:
             echo "BASH_EXEC_FILTER_REGEX_INCLUDE=\"$SCRIPT_FILES_REGEX\""
             echo "BASH_SHELLCHECK_FILE_EXTENSIONS=[\"\"]"
             echo "BASH_SHELLCHECK_FILTER_REGEX_INCLUDE=\"$SCRIPT_FILES_REGEX\""
+            echo "BASH_SHFMT_FILE_EXTENSIONS=[\"\"]"
+            echo "BASH_SHFMT_FILTER_REGEX_INCLUDE=\"$SCRIPT_FILES_REGEX\""
           } >> "$GITHUB_ENV"
 
       # MegaLinter
