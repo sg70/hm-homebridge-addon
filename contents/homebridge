@@ -2,6 +2,8 @@
 ADDONNAME=homebridge
 PREFIX=/usr/local
 ADDON_DIR=${PREFIX}/addons/${ADDONNAME}
+ADDONWWW_DIR=${PREFIX}/etc/config/addons/www/${ADDONNAME}
+RCD_DIR=${PREFIX}/etc/config/rc.d
 EXEC=${PREFIX}/bin/hb-service
 EXECARGS="--user-storage-path $ADDON_DIR --allow-root run"
 PIDFILE=/var/run/hb-service.pid
@@ -23,6 +25,24 @@ restart() {
 	start
 }
 
+info() {
+	VER=$(cat ${ADDON_DIR}/VERSION)
+	PORT=$(jq '.platforms[] | select(.platform="config").port' ${ADDON_DIR}/config.json)
+	echo "Info: Homebridge running on your Homematic controller"
+	echo "Name: hm-homebridge-addon"
+	echo "Version: ${VER}"
+	echo "Operations: restart uninstall"
+	echo "Config-Url: /addons/${ADDONNAME}/index.html?p=${PORT}"
+	echo "Update: /addons/${ADDONNAME}/update-check.cgi"
+}
+
+uninstall() {
+	stop
+	rm -rf ${ADDON_DIR}
+	rm -rf ${ADDONWWW_DIR}
+	rm -f ${RCD_DIR}/S98Homebridge
+}
+
 case "$1" in
 start)
 	start
@@ -33,8 +53,14 @@ stop)
 restart | reload)
 	restart
 	;;
+info)
+	info
+	;;
+uninstall)
+	uninstall
+	;;
 *)
-	echo "Usage: $0 {start|restart|stop}"
+	echo "Usage: $0 {start|restart|stop|info}"
 	exit 1
 	;;
 esac

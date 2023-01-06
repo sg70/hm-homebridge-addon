@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<title>Redirect to Homebridge UI</title>
+<meta name="description" content="Redirect" />
+<meta name="keywords" content="Redirect" />
+<body id="body">
+    Redirect to <a id="redirect" href="">Homebridge UI</a>
+
+    Don't for get to open port PORT in the firewall settings.
+</body>
+<script type="text/javascript">
+    const queryString = window.location.search
+    const params = new URLSearchParams(queryString)
+    const port = parseInt(params.get("p"))
+    const host =  window.location.host + ':' + port
+    let redirect = document.getElementById("redirect")
+    redirect.href = 'https://' + host + '/'
+    let img = new Image()
+    img.onload = function () {
+        redirect.href = 'https://' + host + '/'
+        window.location.href = 'https://' +host + '/'
+    }
+    img.onerror = function () {
+        // the image has failed = no https => failback to http
+        redirect.href = 'http://' + host + '/'
+        window.location.href = 'http://' + host + '/'
+    }
+    img.src = 'https://' + host + '/favicon.ico'
+</script>
+</html>

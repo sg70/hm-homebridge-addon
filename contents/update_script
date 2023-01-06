@@ -4,6 +4,7 @@ ADDONNAME=homebridge
 PREFIX=/usr/local
 CONFIG_DIR=${PREFIX}/etc/config
 ADDON_DIR=${PREFIX}/addons/${ADDONNAME}
+ADDONWWW_DIR=${CONFIG_DIR}/addons/www/${ADDONNAME}
 RCD_DIR=${CONFIG_DIR}/rc.d
 LOGFILE=/var/log/homebridge-install.log
 NPM_CACHE_DIR=/tmp/npm-cache
@@ -19,6 +20,8 @@ fi
 # create necessary directories
 mkdir -p ${ADDON_DIR}
 chmod 755 ${ADDON_DIR}
+mkdir -p ${ADDONWWW_DIR}
+chmod 755 ${ADDONWWW_DIR}
 mkdir -p ${RCD_DIR}
 chmod 755 ${RCD_DIR}
 
@@ -32,11 +35,17 @@ npm config set prefix=${PREFIX}
 npm install --global --unsafe-perm homebridge homebridge-config-ui-x
 ln -s /var/log/homebridge.log ${ADDON_DIR}/homebridge.log
 
-# copy startup script
 cp -af homebridge ${RCD_DIR}/S98Homebridge
+chmod +x ${RCD_DIR}/S98Homebridge
 
-# copy fake-sudo
 cp -af fake-sudo ${PREFIX}/bin/sudo
+
+cp -af index.html ${ADDONWWW_DIR}/index.html
+
+cp -af update-check.cgi ${ADDONWWW_DIR}/update-check.cgi
+chmod +x ${ADDONWWW_DIR}/update-check.cgi
+
+cp -af VERSION ${ADDON_DIR}/VERSION
 
 # start / config Homebridge
 # installation is not nessary as hb-service inits storage dir on 1st start
