@@ -2,63 +2,38 @@
 
 ADDONNAME=homebridge
 PREFIX=/usr/local
-CONFIG_DIR=${PREFIX}/etc/config
-ADDON_DIR=${PREFIX}/addons/${ADDONNAME}
-ADDONWWW_DIR=${CONFIG_DIR}/addons/www/${ADDONNAME}
-RCD_DIR=${CONFIG_DIR}/rc.d
-LOGFILE=/var/log/homebridge-install.log
-NPM_CACHE_DIR=/tmp/npm-cache
-
-# redirect all output to log file
-exec >$LOGFILE 2>&1
+ADDONCONFIG_DIR=${PREFIX}/etc/config/addons/${ADDONNAME}
 
 mount | grep ${PREFIX}
 if [ $? -eq 1 ]; then
 	mount ${PREFIX}
 fi
 
-# create necessary directories
-mkdir -p ${ADDON_DIR}
-chmod 755 ${ADDON_DIR}
-mkdir -p ${ADDONWWW_DIR}
-chmod 755 ${ADDONWWW_DIR}
-mkdir -p ${RCD_DIR}
-chmod 755 ${RCD_DIR}
+mkdir -p ${ADDONCONFIG_DIR}
+chmod 755 ${ADDONCONFIG_DIR}
+# redirect all output to log file
+exec >${ADDONCONFIG_DIR}/${ADDONNAME}-install.log 2>&1
 
-# install Homebridge and Homebridge UI
-echo "Running on Node version: "
-node --version
-echo "NPM is : "
-npm --version
-npm config set cache=${NPM_CACHE_DIR}
-npm config set prefix=${PREFIX}
-npm install --global --unsafe-perm homebridge homebridge-config-ui-x
-ln -s /var/log/homebridge.log ${ADDON_DIR}/homebridge.log
+# copy content of package to config directory
+cp -af homebridge ${ADDONCONFIG_DIR}/homebridge
+chmod +x ${ADDONCONFIG_DIR}/homebridge
+cp -af fake-sudo ${ADDONCONFIG_DIR}/fake-sudo
+chmod +x ${ADDONCONFIG_DIR}/fake-sudo
+cp -af index.html ${ADDONCONFIG_DIR}/index.html
+cp -af update-check.cgi ${ADDONCONFIG_DIR}/update-check.cgi
+chmod +x ${ADDONCONFIG_DIR}/update-check.cgi
+cp -af VERSION ${ADDONCONFIG_DIR}/VERSION
 
-cp -af homebridge ${RCD_DIR}/S98Homebridge
-chmod +x ${RCD_DIR}/S98Homebridge
-
-cp -af fake-sudo ${PREFIX}/bin/sudo
-
-cp -af index.html ${ADDONWWW_DIR}/index.html
-
-cp -af update-check.cgi ${ADDONWWW_DIR}/update-check.cgi
-chmod +x ${ADDONWWW_DIR}/update-check.cgi
-
-cp -af VERSION ${ADDON_DIR}/VERSION
-
-# start / config Homebridge
-# installation is not nessary as hb-service inits storage dir on 1st start
+# finish installation
 cd /
-${RCD_DIR}/S98Homebridge start
+${ADDONCONFIG_DIR}/homebridge install
 
 # wait until Homebridge has started
 sleep 5
 sync
 
-# read Homebridge UI port
-HOMEBRIDGE_UI_PORT=$(jq '.platforms[] | select(.platform="config").port' $ADDON_DIR/config.json)
-echo "Homebridge UI port: $HOMEBRIDGE_UI_PORT"
+# check installation
+${ADDONCONFIG_DIR}/homebridge info
 
 # force restart after installation
 exit 10

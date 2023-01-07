@@ -2,21 +2,27 @@
 ADDONNAME=homebridge
 PREFIX=/usr/local
 ADDON_DIR=${PREFIX}/addons/${ADDONNAME}
+ADDONCONFIG_DIR=${PREFIX}/etc/config/addons/${ADDONNAME}
 ADDONWWW_DIR=${PREFIX}/etc/config/addons/www/${ADDONNAME}
 RCD_DIR=${PREFIX}/etc/config/rc.d
-EXEC=${PREFIX}/bin/hb-service
-EXECARGS="--user-storage-path $ADDON_DIR --allow-root run"
+EXEC=${ADDON_DIR}/bin/hb-service
+EXECARGS="--user-storage-path ${ADDON_DIR} --allow-root run"
 PIDFILE=/var/run/hb-service.pid
+NPM_CACHE_DIR=/tmp/npm-cache
 
 start() {
-	logger -t homebridge -p user.info "start $ADDONNAME"
+	export NPM_CONFIG_CACHE=${NPM_CACHE_DIR}
+	export NPM_CONFIG_PREFIX=${ADDON_DIR}
+	logger -t ${ADDONNAME} -p user.info "start ${ADDONNAME}"
 	# shellcheck disable=SC2086 # word split on spaces wanted for $EXECARGS
-	start-stop-daemon --start --oknodo --make-pidfile --background --pidfile "$PIDFILE" --exec "$EXEC" -- $EXECARGS
+	start-stop-daemon --start --oknodo --make-pidfile --background --pidfile "${PIDFILE}" --exec "${EXEC}" -- ${EXECARGS}
 }
 
 stop() {
-	start-stop-daemon --stop --oknodo --retry 5 --pidfile "$PIDFILE"
-	logger -t homebridge -p user.info "stopped $ADDONNAME"
+	export NPM_CONFIG_CACHE=${NPM_CACHE_DIR}
+	export NPM_CONFIG_PREFIX=${ADDON_DIR}
+	start-stop-daemon --stop --oknodo --retry 5 --pidfile "${PIDFILE}"
+	logger -t ${ADDONNAME} -p user.info "stopped ${ADDONNAME}"
 }
 
 restart() {
@@ -27,20 +33,54 @@ restart() {
 
 info() {
 	VER=$(cat ${ADDON_DIR}/VERSION)
-	PORT=$(jq '.platforms[] | select(.platform="config").port' ${ADDON_DIR}/config.json)
-	echo "Info: Homebridge running on your Homematic controller"
+	PORT_UI=$(jq '.platforms[] | select(.platform | contains("config")).port' ${ADDON_DIR}/config.json)
+	PORT_HK=$(jq '.bridge.port' ${ADDON_DIR}/config.json)
+	echo "Info: Homebridge running on your Homematic controller - Don't for get to open ports (${PORT_UI} & ${PORT_HK}) in the firewall settings."
 	echo "Name: hm-homebridge-addon"
 	echo "Version: ${VER}"
 	echo "Operations: restart uninstall"
-	echo "Config-Url: /addons/${ADDONNAME}/index.html?p=${PORT}"
+	echo "Config-Url: /addons/${ADDONNAME}/index.html?p=${PORT_UI}"
 	echo "Update: /addons/${ADDONNAME}/update-check.cgi"
+}
+
+install() {
+	# create necessary directories
+	mkdir -p ${ADDON_DIR}
+	chmod 755 ${ADDON_DIR}
+	mkdir -p ${ADDONWWW_DIR}
+	chmod 755 ${ADDONWWW_DIR}
+	mkdir -p ${RCD_DIR}
+	chmod 755 ${RCD_DIR}
+	mkdir -p ${PREFIX}/bin
+	chmod 755 ${PREFIX}/bin
+	# link files
+	ln -s /var/log/homebridge.log ${ADDON_DIR}/homebridge.log
+	ln -s ${ADDONCONFIG_DIR}/homebridge ${RCD_DIR}/S98${ADDONNAME}
+	ln -s ${ADDONCONFIG_DIR}/fake-sudo ${PREFIX}/bin/sudo
+	ln -s ${ADDONCONFIG_DIR}/index.html ${ADDONWWW_DIR}/index.html
+	ln -s ${ADDONCONFIG_DIR}/update-check.cgi ${ADDONWWW_DIR}/update-check.cgi
+	ln -s ${ADDONCONFIG_DIR}/VERSION ${ADDON_DIR}/VERSION
+	# install Homebridge and Homebridge UI
+	export NPM_CONFIG_CACHE=${NPM_CACHE_DIR}
+	export NPM_CONFIG_PREFIX=${ADDON_DIR}
+	echo "Running on Node version: "
+	node --version
+	echo "Running on NPM is: "
+	npm --version
+	echo "Install  homebridge & homebridge-config-ui-x"
+	npm install --global --unsafe-perm homebridge homebridge-config-ui-x
+	# start / config Homebridge
+	start
 }
 
 uninstall() {
 	stop
 	rm -rf ${ADDON_DIR}
+	rm -rf ${ADDONCONFIG_DIR}
 	rm -rf ${ADDONWWW_DIR}
-	rm -f ${RCD_DIR}/S98Homebridge
+	rm -f ${RCD_DIR}/S98${ADDONNAME}
+	rm -f ${PREFIX}/bin/sudo
+	rm -f ${PIDFILE}
 }
 
 case "$1" in
@@ -56,11 +96,14 @@ restart | reload)
 info)
 	info
 	;;
+install)
+	install
+	;;
 uninstall)
 	uninstall
 	;;
 *)
-	echo "Usage: $0 {start|restart|stop|info}"
+	echo "Usage: $0 {start|restart|stop|info|install|uninstall}"
 	exit 1
 	;;
 esac

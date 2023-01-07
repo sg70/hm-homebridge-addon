@@ -11,8 +11,7 @@ cd contents
 tar -czvf ../homebridge.tar.gz *
 ```
 
-## TODOS
+## TODOs
 
 * create release and add download
-* move node modules to addon directory
 * docu
