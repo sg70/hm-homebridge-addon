@@ -1,0 +1,52 @@
+---
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  build-artifact:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # Git Checkout
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      # Create tarball
+      - name: Tarball
+        uses: a7ul/tar-action@v1
+        id: tarball
+        with:
+          command: c
+          cwd: ./contents
+          path: |
+            *
+          outPath: hm-homebridge-addon-${{ github.ref_name }}.tar.gz
+
+      # Upload tarball
+      - name: Upload
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: tarball
+          path: |
+            hm-homebridge-addon-${{ github.ref_name }}.tar.gz
+
+      # Create release
+      - name: Release
+        if: ${{ success() }}
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: hm-homebridge-addon-*.tar.gz
